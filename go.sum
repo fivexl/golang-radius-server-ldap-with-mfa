@@ -1,0 +1,17 @@
+github.com/duosecurity/duo_api_golang v0.0.0-20200427151832-9b49acdeffee h1:Zb4kmzy7Gt3ihJsb++KZZ7wOgYmdIDazaWcNCv6r+wU=
+github.com/duosecurity/duo_api_golang v0.0.0-20200427151832-9b49acdeffee/go.mod h1:jdoEJUIrTIxN7nNTwwqA3TBNcSM+W1lrWM6OXVhjbG8=
+github.com/hashicorp/vault v1.4.2 h1:KnAPBTb4G7JidQiUXVDk3+LPp+iWPMbMsGmw4POJI4k=
+gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d h1:TxyelI5cVkbREznMhfzycHdkp5cLA7DpE+GKjSslYhM=
+gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d/go.mod h1:cuepJuh7vyXfUyUwEgHQXw849cJrilpS5NeIjOWESAw=
+gopkg.in/gcfg.v1 v1.2.3 h1:m8OOJ4ccYHnx2f4gQwpno8nAX5OGOh7RLaaz0pj3Ogs=
+gopkg.in/gcfg.v1 v1.2.3/go.mod h1:yesOnuUOFQAhST5vPY4nbZsb/huCgGGXlipJsBn0b3o=
+gopkg.in/go-validator/validator.v2 v2.0.0-20200605151824-2b28d334fa05 h1:QQGLXYWaCHoH76U7FWA1rl1blpGfZyClcBAvCDyR2Hs=
+gopkg.in/go-validator/validator.v2 v2.0.0-20200605151824-2b28d334fa05/go.mod h1:kKKjhP+y3S46JSon7A+PF0zP77v02DeqE1jGgaRCOUc=
+gopkg.in/ldap.v2 v2.5.1 h1:wiu0okdNfjlBzg6UWvd1Hn8Y+Ux17/u/4nlk4CQr6tU=
+gopkg.in/ldap.v2 v2.5.1/go.mod h1:oI0cpe/D7HRtBQl8aTg+ZmzFUAvu4lsv3eLXMLGFxWk=
+gopkg.in/ldap.v3 v3.1.0 h1:DIDWEjI7vQWREh0S8X5/NFPCZ3MCVd55LmXKPW4XLGE=
+gopkg.in/ldap.v3 v3.1.0/go.mod h1:dQjCc0R0kfyFjIlWNMH1DORwUASZyDxo2Ry1B51dXaQ=
+gopkg.in/warnings.v0 v0.1.2 h1:wFXVbFY8DY5/xOe1ECiWdKCzZlxgshcYVNkBHstARME=
+gopkg.in/warnings.v0 v0.1.2/go.mod h1:jksf8JmL6Qr/oQM2OXTHunEvvTAsrWBLb6OOjuVWRNI=
+layeh.com/radius v0.0.0-20200602234601-d796d70b09d7 h1:FT979YC1VXduyC9ATema3kM+c7A2lUNu/kWQfB8iXQs=
+layeh.com/radius v0.0.0-20200602234601-d796d70b09d7/go.mod h1:lGEjzZ49j7EhtyvqZboqTYD6tnw/NR0S8ix1PXHfRgE=
