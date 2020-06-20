@@ -9,6 +9,7 @@
 Copy binary to server and place config file next to it. That is it
 
 # Configuration example
+```
 [Radius]
 Listen=127.0.0.1:1812
 Secret=secret
@@ -20,3 +21,4 @@ Enabled=true
 IKey=XXXXXXXXXXXX
 SKey=XXXXXXXXXXXXXXX
 APIHost=api-xxxxx.duosecurity.com
+```
