@@ -2,9 +2,10 @@
 
 set -ex
 
-BUILD_DIR="$PWD/build"
+TOP="$(git rev-parse --show-toplevel)"
+BUILD_DIR="${TOP}/build"
 
-mkdir -p "$BUILD_DIR"
+mkdir -p "${BUILD_DIR}"
 
 VERSION=${1}
 [ -z "${VERSION}" ] && VERSION=beta-$(date "+%Y_%m_%d_%H_%M_%S")-$(git rev-parse HEAD)
