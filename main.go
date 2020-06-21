@@ -70,7 +70,7 @@ func Run(c *cli.Context) (err error) {
 		return cli.Exit(VERSION, 0)
 	}
 
-	log.Printf("Starting RADIUS server version %s", VERSION)
+	log.Printf("LDAP based RADIUS server with MFA support version %s", VERSION)
 
 	var configPath string = c.String("config")
 	var config Config
@@ -93,7 +93,6 @@ func Run(c *cli.Context) (err error) {
 		}
 	}
 
-	log.Printf("Listening at %s", config.Radius.Listen)
 	handler := func(w radius.ResponseWriter, r *radius.Request) {
 		username := rfc2865.UserName_GetString(r.Packet)
 		password := rfc2865.UserPassword_GetString(r.Packet)
