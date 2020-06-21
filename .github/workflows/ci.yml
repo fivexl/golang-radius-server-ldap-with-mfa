@@ -22,8 +22,8 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Lint Code Base
-      uses: docker://github/super-linter:latest
+#    - name: Lint Code Base
+#      uses: docker://github/super-linter:latest
 
     - name: Get dependencies
       run: |
