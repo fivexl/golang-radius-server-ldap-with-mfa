@@ -57,7 +57,7 @@ func main() {
 		code := radius.CodeAccessReject
 
 		if authResult, err = AuthRequest(username, password, lc, dc); err != nil {
-			log.Printf("Error while performing auth for user %s: %s", err)
+			log.Printf("Error while performing auth for user %s: %s", username, err)
 		} else if authResult {
 			code = radius.CodeAccessAccept
 		}
