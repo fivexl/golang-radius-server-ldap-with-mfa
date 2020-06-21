@@ -54,7 +54,7 @@ func (l *LdapConnection) CheckUser(username string, password string) (result boo
 
 	userDn := strings.Replace(l.userDn, "{{username}}", username, -1)
 
-	log.Printf(userDn)
+	log.Printf("Checking %s", userDn)
 	if err = l.conn.Bind(userDn, password); err != nil {
 		return false, err
 	}

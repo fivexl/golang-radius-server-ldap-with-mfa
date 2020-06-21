@@ -105,7 +105,10 @@ func Run(c *cli.Context) (err error) {
 			code = radius.CodeAccessAccept
 		}
 		log.Printf("Writing %v to %v", code, r.RemoteAddr)
-		w.Write(r.Response(code))
+		err = w.Write(r.Response(code))
+		if err != nil {
+			log.Printf("Encountered error when responding to request: %s", err)
+		}
 	}
 
 	server := radius.PacketServer{
