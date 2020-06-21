@@ -3,15 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	duoauthapi "github.com/duosecurity/duo_api_golang/authapi"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 
 	"gopkg.in/gcfg.v1"
+
+	"github.com/urfave/cli/v2"
 )
 
-// AuthRequest ...
+// VERSION will be passed via compliation flag
+var VERSION string
+
+// AuthRequest - encapsulates approval logic
 func AuthRequest(username string, password string, lc LdapConnection, dc *duoauthapi.AuthApi) (result bool, err error) {
 	isLdapCheckOk := false
 	isDuoCheckOk := true
@@ -31,25 +37,63 @@ func AuthRequest(username string, password string, lc LdapConnection, dc *duoaut
 }
 
 func main() {
-	var configPath string = "./config.gcfg"
-	var config Config
-	var err error
-	if err = gcfg.ReadFileInto(&config, configPath); err != nil {
-		log.Fatalf("Failed to read config file %s: %s", configPath, err)
+	app := &cli.App{
+		Name:   "LDAP based RADIUS server with MFA support",
+		Usage:  fmt.Sprintf("Provide a valid config file and server will take care of the rest\n\n   Version: %s\n   Source:  https://github.com/FivexL/golang-radius-server-ldap-with-mfa", VERSION),
+		Action: Run,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Value:   "./config.gcfg",
+				Usage:   "Path to the config file",
+				EnvVars: []string{"RADIUS_SERVER_CONFIG_PATH"},
+			},
+			&cli.BoolFlag{
+				Name:    "version",
+				Aliases: []string{"v"},
+				Usage:   "prints version and exists",
+			},
+		},
 	}
 
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Run - function to be called by cli.App wrapper
+func Run(c *cli.Context) (err error) {
+
+	if c.Bool("version") {
+		return cli.Exit(VERSION, 0)
+	}
+
+	log.Printf("Starting RADIUS server version %s", VERSION)
+
+	var configPath string = c.String("config")
+	var config Config
+	log.Printf("Parsing config file %s", configPath)
+	if err = gcfg.ReadFileInto(&config, configPath); err != nil {
+		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
+	}
+
+	log.Printf("Setting up LDAP connection to %s", config.Ldap.Addr)
 	var lc LdapConnection
 	if lc, err = NewLdapConnection(config.Ldap.Addr, config.Ldap.UserDn); err != nil {
-		log.Fatalf("Failed to initiate connection to LDAP server: %s", err)
+		return fmt.Errorf("Failed to initiate connection to LDAP server: %s", err)
 	}
 
 	var dc *duoauthapi.AuthApi = nil
 	if config.Duo.Enabled {
+		log.Printf("DUO MFA is enabled. Initiating DUO client for API endpoint %s", config.Duo.APIHost)
 		if dc, err = GetDuoAuthClient(config.Duo.IKey, config.Duo.SKey, config.Duo.APIHost); err != nil {
-			log.Fatalf("Failed to initiate Duo client: %s", err)
+			return fmt.Errorf("Failed to initiate Duo client: %s", err)
 		}
 	}
 
+	log.Printf("Listening at %s", config.Radius.Listen)
 	handler := func(w radius.ResponseWriter, r *radius.Request) {
 		username := rfc2865.UserName_GetString(r.Packet)
 		password := rfc2865.UserPassword_GetString(r.Packet)
@@ -73,6 +117,7 @@ func main() {
 
 	log.Printf("Starting server on %s", config.Radius.Listen)
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }

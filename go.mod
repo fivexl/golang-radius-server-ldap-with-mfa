@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/duosecurity/duo_api_golang v0.0.0-20200427151832-9b49acdeffee
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/urfave/cli/v2 v2.2.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/go-validator/validator.v2 v2.0.0-20200605151824-2b28d334fa05
