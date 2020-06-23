@@ -1,0 +1,9 @@
+LDAP Based Radius Server With MFA Support
+Copyright 2020 Andrey Devyatkin
+
+This product links and uses the folling modules
+* https://github.com/duosecurity/duo_api_golang, distributed under The 3-Clause BSD License, Copyright (c) 2015, Duo Security, Inc. All rights reserved.
+* https://github.com/layeh/radius distributed under Mozilla Public License 2.0
+* https://github.com/urfave/cli distributed under MIT License, Copyright (c) 2016 Jeremy Saenz & Contributors
+* https://github.com/go-gcfg/gcfg distributed under The 3-Clause BSD License, Copyright (c) 2012 Péter Surányi. Portions Copyright (c) 2009 The Go
+Authors. All rights reserved.
