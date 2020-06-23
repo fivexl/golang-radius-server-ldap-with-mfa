@@ -104,7 +104,7 @@ func Run(c *cli.Context) (err error) {
 	var config Config
 	log.Printf("Parsing config file %s", configPath)
 	if err = gcfg.ReadFileInto(&config, configPath); err != nil {
-		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
+		return fmt.Errorf("Failed to read config file %s: %w", configPath, err)
 	}
 	if err = config.Validate(); err != nil {
 		return fmt.Errorf("Config validation failed: %w", err)
@@ -113,18 +113,18 @@ func Run(c *cli.Context) (err error) {
 	log.Printf("Setting up LDAP connection to %s", config.Ldap.Addr)
 	var lc LdapConnection
 	if lc, err = NewLdapConnection(config); err != nil {
-		return fmt.Errorf("Failed to configure LDAP server connection: %s", err)
+		return fmt.Errorf("Failed to configure LDAP server connection: %w", err)
 	}
 
 	if err = lc.Connect(); err != nil {
-		return fmt.Errorf("Failed to connect to LDAP server due to: %s", err)
+		return fmt.Errorf("Failed to connect to LDAP server due to: %w", err)
 	}
 
 	var dc *duoauthapi.AuthApi = nil
 	if config.Duo.Enabled {
 		log.Printf("DUO MFA is enabled. Initiating DUO client for API endpoint %s", config.Duo.APIHost)
 		if dc, err = GetDuoAuthClient(config.Duo.IKey, config.Duo.SKey, config.Duo.APIHost); err != nil {
-			return fmt.Errorf("Failed to initiate Duo client: %s", err)
+			return fmt.Errorf("Failed to initiate Duo client: %w", err)
 		}
 	}
 
