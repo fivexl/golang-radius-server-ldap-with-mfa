@@ -18,22 +18,38 @@ import (
 var VERSION string
 
 // AuthRequest - encapsulates approval logic
-func AuthRequest(username string, password string, lc LdapConnection, dc *duoauthapi.AuthApi) (result bool, err error) {
-	isLdapCheckOk := false
-	isDuoCheckOk := true
-	if isLdapCheckOk, err = lc.CheckUser(username, password); err != nil {
-		return false, fmt.Errorf("LDAP auth failed for user %s: %w", username, err)
-	}
-	log.Printf("LDAP auth for user %s: %t", username, isLdapCheckOk)
-	if dc != nil {
-		if isDuoCheckOk, err = DuoPushAuth(dc, username); err != nil {
-			return false, fmt.Errorf("DUO auth failed for user %s: %w", username, err)
+func AuthRequest(username string, password string, lc LdapConnection, dc *duoauthapi.AuthApi) (soFarSoGood bool, err error) {
+	soFarSoGood = false
+	if lc.groupFilter != "" {
+		if soFarSoGood, err = lc.CheckGroupMembership(username); err != nil {
+			return false, fmt.Errorf("LDAP group membership check for user %s failed with error: %w", username, err)
 		}
-		log.Printf("DUO auth for user %s: %t", username, isDuoCheckOk)
+		log.Printf("LDAP group membership check status for user %s: %t", username, soFarSoGood)
+		if !soFarSoGood {
+			log.Printf("Reject auth request from user %s", username)
+			return false, nil
+		}
 	}
-	result = isLdapCheckOk && isDuoCheckOk
-	log.Printf("Overal status for use %s: %t", username, result)
-	return result, nil
+	if soFarSoGood, err = lc.CheckUser(username, password); err != nil {
+		return false, fmt.Errorf("LDAP auth for user %s failed with error: %w", username, err)
+	}
+	log.Printf("LDAP auth status for user %s: %t", username, soFarSoGood)
+	if !soFarSoGood {
+		log.Printf("Reject auth request from user %s", username)
+		return false, nil
+	}
+	if dc != nil {
+		if soFarSoGood, err = DuoPushAuth(dc, username); err != nil {
+			return false, fmt.Errorf("DUO auth for user %s failed with error: %w", username, err)
+		}
+		log.Printf("DUO auth status for user %s: %t", username, soFarSoGood)
+		if !soFarSoGood {
+			log.Printf("Reject auth request from user %s", username)
+			return false, nil
+		}
+	}
+	log.Printf("Final auth status for user %s: %t", username, soFarSoGood)
+	return soFarSoGood, nil
 }
 
 func main() {
@@ -81,8 +97,12 @@ func Run(c *cli.Context) (err error) {
 
 	log.Printf("Setting up LDAP connection to %s", config.Ldap.Addr)
 	var lc LdapConnection
-	if lc, err = NewLdapConnection(config.Ldap.Addr, config.Ldap.UserDn); err != nil {
-		return fmt.Errorf("Failed to initiate connection to LDAP server: %s", err)
+	if lc, err = NewLdapConnection(config); err != nil {
+		return fmt.Errorf("Failed to configure LDAP server connection: %s", err)
+	}
+
+	if err = lc.Connect(); err != nil {
+		return fmt.Errorf("Failed to connect to LDAP server due to: %s", err)
 	}
 
 	var dc *duoauthapi.AuthApi = nil

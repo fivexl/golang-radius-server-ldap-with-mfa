@@ -7,8 +7,12 @@ type Config struct {
 		Secret string
 	}
 	Ldap struct {
-		Addr   string
-		UserDn string
+		Addr        string
+		UserDn      string
+		BaseDn      string
+		User        string
+		Password    string
+		GroupFilter string
 	}
 	Duo struct {
 		Enabled bool
