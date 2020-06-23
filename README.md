@@ -22,7 +22,7 @@ Contains parametes that allows configuration of RADIUS server connection
 * `User`        - bind user name that will be used to run LDAP searches when `GroupFilter` is specified. Not used otherwise. Optional.
 * `Password`    - bind user password that will be used to run LDAP searches when `GroupFilter` is specified. Not used otherwise. Optional.
 * `BaseDN`      - used to scope down group membership checkes when `GroupFilter` is specified. Not used otherwise. Optional.
-* `GroupFilter` - LDAP search query that could be used to check user group memebership. Or whatever you want to check. Search considered successful if only one entry returned. Will not run any searches if not specified. Optional. Requires - `User`, `Password`, `BaseDN`
+* `GroupFilter` - LDAP search query that could be used to check user group memebership. Or whatever you want to check. Use `{{username}}` as a placeholder where to fill in user name. Search considered successful if only one entry returned. Will not run any searches if not specified. Optional. Requires - `User`, `Password`, `BaseDN`
 
 ## DUO section
 Optional section that enables MFA with DUO. Read [here](https://duo.com/docs/protecting-applications) how to get credentials
