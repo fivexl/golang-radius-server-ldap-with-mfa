@@ -106,6 +106,9 @@ func Run(c *cli.Context) (err error) {
 	if err = gcfg.ReadFileInto(&config, configPath); err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
+	if err = config.Validate(); err != nil {
+		return fmt.Errorf("Config validation failed: %w", err)
+	}
 
 	log.Printf("Setting up LDAP connection to %s", config.Ldap.Addr)
 	var lc LdapConnection

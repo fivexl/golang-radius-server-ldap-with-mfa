@@ -18,6 +18,11 @@ limitations under the License.
 
 package main
 
+import (
+	"fmt"
+	"log"
+)
+
 // Config ...
 type Config struct {
 	Radius struct {
@@ -38,4 +43,57 @@ type Config struct {
 		SKey    string
 		IKey    string
 	}
+}
+
+// Validate - makes sure that configuration is valid
+// There should be better way
+func (c *Config) Validate() (err error) {
+	// Radius config
+	log.Println("Validating RADIUS configuration")
+	if c.Radius.Listen == "" {
+		return fmt.Errorf("Failed to validate RADIUS configuration - Listen is required")
+	}
+	// Check that Listen is an address
+	if c.Radius.Secret == "" {
+		return fmt.Errorf("Failed to validate RADIUS configuration - Secret is required")
+	}
+	log.Println("RADIUS configuration is valid")
+	log.Println("Validating LDAP configuration")
+	if c.Ldap.Addr == "" {
+		return fmt.Errorf("Failed to validate LDAP configuration - Addr is required")
+	}
+	// Check that Addr is an address
+	if c.Ldap.UserDn == "" {
+		return fmt.Errorf("Failed to validate RADIUS configuration - UserDn is required")
+	}
+	if c.Ldap.GroupFilter != "" {
+		if c.Ldap.User == "" {
+			return fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but User is not. User is required when GroupFilter is not empty")
+		}
+		if c.Ldap.Password == "" {
+			return fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but Password is not. Password is required when GroupFilter is not empty")
+		}
+		if c.Ldap.BaseDn == "" {
+			return fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but BaseDn is not. BaseDn is required when GroupFilter is not empty")
+		}
+	}
+	log.Println("LDAP configuration is valid")
+	if c.Duo.Enabled {
+		log.Println("DUO is enabled. Validating DUO configuration")
+		// Check format
+		if c.Duo.IKey == "" {
+			return fmt.Errorf("Failed to validate DUO configuration - IKey is valid")
+		}
+		// Check format
+		if c.Duo.SKey == "" {
+			return fmt.Errorf("Failed to validate DUO configuration - SKey is required")
+		}
+		// Check that it is address
+		if c.Duo.APIHost == "" {
+			return fmt.Errorf("Failed to validate DUO configuration - APIHost is required")
+		}
+	} else {
+		log.Println("DUO is disabled. Skip DUO configuration validation")
+	}
+	return nil
 }

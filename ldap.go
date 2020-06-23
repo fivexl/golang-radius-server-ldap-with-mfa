@@ -23,14 +23,13 @@ import (
 	"log"
 	"strings"
 
-	"gopkg.in/go-validator/validator.v2"
 	"gopkg.in/ldap.v3"
 )
 
 // LdapConnection ...
 type LdapConnection struct {
-	addr        string `validate:"nonzero"`
-	userDn      string `validate:"nonzero"`
+	addr        string
+	userDn      string
 	basedn      string
 	user        string
 	password    string
@@ -47,20 +46,6 @@ func NewLdapConnection(config Config) (lc LdapConnection, err error) {
 		password:    config.Ldap.Password,
 		groupFilter: config.Ldap.GroupFilter,
 		conn:        nil}
-	if err = validator.Validate(lc); err != nil {
-		return LdapConnection{}, err
-	}
-	if lc.groupFilter != "" {
-		if lc.user == "" {
-			return LdapConnection{}, fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but User is not. User is required when GroupFilter is not empty")
-		}
-		if lc.password == "" {
-			return LdapConnection{}, fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but Password is not. Password is required when GroupFilter is not empty")
-		}
-		if lc.basedn == "" {
-			return LdapConnection{}, fmt.Errorf("Failed to validate LDAP configuration - GroupFilter specified but BaseDn is not. BaseDn is required when GroupFilter is not empty")
-		}
-	}
 	return lc, nil
 }
 
