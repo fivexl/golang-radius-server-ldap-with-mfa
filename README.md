@@ -1,4 +1,4 @@
-# RADIUS server based on LDAP with out-of-the-box support for MFA
+# LDAP based RADIUS server with MFA Support
 * Written in Golang
 * LDAP based
 * DUO support (Push notification)
