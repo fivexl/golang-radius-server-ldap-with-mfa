@@ -55,7 +55,7 @@ func AuthRequest(username string, password string, lc LdapConnection, dc *duoaut
 func main() {
 	app := &cli.App{
 		Name:   "LDAP based RADIUS server with MFA support",
-		Usage:  fmt.Sprintf("Provide a valid config file and server will take care of the rest\n\n   Version: %s\n   Source:  https://github.com/FivexL/golang-radius-server-ldap-with-mfa", VERSION),
+		Usage:  fmt.Sprintf("Provide a valid config file and server will take care of the rest\n\n   Version:        %s\n   Documentation:  https://github.com/FivexL/golang-radius-server-ldap-with-mfa/README.md", VERSION),
 		Action: Run,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -87,6 +87,7 @@ func Run(c *cli.Context) (err error) {
 	}
 
 	log.Printf("LDAP based RADIUS server with MFA support version %s", VERSION)
+	log.Printf("Documentation and installation instructions: https://github.com/FivexL/golang-radius-server-ldap-with-mfa/blob/master/README.md")
 
 	var configPath string = c.String("config")
 	var config Config
