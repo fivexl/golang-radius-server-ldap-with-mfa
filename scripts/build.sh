@@ -8,7 +8,7 @@ BUILD_DIR="${TOP}/build"
 mkdir -p "${BUILD_DIR}"
 
 VERSION=${1}
-[ -z "${VERSION}" ] && VERSION=beta-$(date "+%Y_%m_%d_%H_%M_%S")-$(git rev-parse HEAD)
+[ -z "${VERSION}" ] && VERSION=$(git describe --tags)-$(date "+%Y_%m_%d_%H_%M_%S")
 
 TARGET_GOOSES=("linux" "darwin")
 export GOARCH=amd64
