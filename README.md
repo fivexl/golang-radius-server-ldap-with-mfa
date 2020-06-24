@@ -91,3 +91,8 @@ For the test we need a client
 sudo apt-get install freeradius-utils
 radtest <username> <password> localhost 1812 <radius secret>
 ```
+
+Checking packets sent to server
+```
+sudo tshark -f "udp port 1812" -i any -V
+```
