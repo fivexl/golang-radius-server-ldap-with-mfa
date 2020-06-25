@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	duoauthapi "github.com/duosecurity/duo_api_golang/authapi"
 	"layeh.com/radius"
@@ -36,37 +37,37 @@ import (
 var VERSION string
 
 // AuthRequest - encapsulates approval logic
-func AuthRequest(username string, password string, lc LdapConnection, dc *duoauthapi.AuthApi) (soFarSoGood bool, err error) {
+func AuthRequest(username string, password string, rLog *log.Logger, lc LdapConnection, dc *duoauthapi.AuthApi) (soFarSoGood bool, err error) {
 	soFarSoGood = false
 	if lc.groupFilter != "" {
-		if soFarSoGood, err = lc.CheckGroupMembership(username); err != nil {
+		if soFarSoGood, err = lc.CheckGroupMembership(username, rLog); err != nil {
 			return false, fmt.Errorf("LDAP group membership check for user %s failed with error: %w", username, err)
 		}
-		log.Printf("LDAP group membership check status for user %s: %t", username, soFarSoGood)
+		rLog.Printf("LDAP group membership check status for user %s: %t", username, soFarSoGood)
 		if !soFarSoGood {
-			log.Printf("Reject auth request from user %s", username)
+			rLog.Printf("Reject auth request from user %s", username)
 			return false, nil
 		}
 	}
-	if soFarSoGood, err = lc.CheckUser(username, password); err != nil {
+	if soFarSoGood, err = lc.CheckUser(username, password, rLog); err != nil {
 		return false, fmt.Errorf("LDAP auth for user %s failed with error: %w", username, err)
 	}
-	log.Printf("LDAP auth status for user %s: %t", username, soFarSoGood)
+	rLog.Printf("LDAP auth status for user %s: %t", username, soFarSoGood)
 	if !soFarSoGood {
-		log.Printf("Reject auth request from user %s", username)
+		rLog.Printf("Reject auth request from user %s", username)
 		return false, nil
 	}
 	if dc != nil {
 		if soFarSoGood, err = DuoPushAuth(dc, username); err != nil {
 			return false, fmt.Errorf("DUO auth for user %s failed with error: %w", username, err)
 		}
-		log.Printf("DUO auth status for user %s: %t", username, soFarSoGood)
+		rLog.Printf("DUO auth status for user %s: %t", username, soFarSoGood)
 		if !soFarSoGood {
-			log.Printf("Reject auth request from user %s", username)
+			rLog.Printf("Reject auth request from user %s", username)
 			return false, nil
 		}
 	}
-	log.Printf("Final auth status for user %s: %t", username, soFarSoGood)
+	rLog.Printf("Final auth status for user %s: %t", username, soFarSoGood)
 	return soFarSoGood, nil
 }
 
@@ -110,13 +111,12 @@ func Run(c *cli.Context) (err error) {
 		return fmt.Errorf("Config validation failed: %w", err)
 	}
 
-	log.Printf("Setting up LDAP connection to %s", config.Ldap.Addr)
 	var lc LdapConnection
 	if lc, err = NewLdapConnection(config); err != nil {
 		return fmt.Errorf("Failed to configure LDAP server connection: %w", err)
 	}
 
-	if err = lc.Connect(); err != nil {
+	if err := lc.TestConnection(); err != nil {
 		return fmt.Errorf("Failed to connect to LDAP server due to: %w", err)
 	}
 
@@ -131,18 +131,22 @@ func Run(c *cli.Context) (err error) {
 	handler := func(w radius.ResponseWriter, r *radius.Request) {
 		username := rfc2865.UserName_GetString(r.Packet)
 		password := rfc2865.UserPassword_GetString(r.Packet)
+		requestID := time.Now().UnixNano() / int64(time.Millisecond)
+		requestLogger := log.New(os.Stdout, fmt.Sprintf("%s [Request-%d]", log.Prefix(), requestID), log.LstdFlags|log.Lmsgprefix)
 		authResult := false
 		code := radius.CodeAccessReject
 
-		if authResult, err = AuthRequest(username, password, lc, dc); err != nil {
-			log.Printf("Error while performing auth for user %s: %s", username, err)
+		requestLogger.Println("Handling new request")
+
+		if authResult, err = AuthRequest(username, password, requestLogger, lc, dc); err != nil {
+			requestLogger.Printf("Error while performing auth for user %s: %s", username, err)
 		} else if authResult {
 			code = radius.CodeAccessAccept
 		}
-		log.Printf("Writing %v to %v", code, r.RemoteAddr)
+		requestLogger.Printf("Writing %v to %v", code, r.RemoteAddr)
 		err = w.Write(r.Response(code))
 		if err != nil {
-			log.Printf("Encountered error when responding to request: %s", err)
+			requestLogger.Printf("Encountered error when responding to request: %s", err)
 		}
 	}
 

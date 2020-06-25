@@ -34,7 +34,6 @@ type LdapConnection struct {
 	user        string
 	password    string
 	groupFilter string
-	conn        *ldap.Conn
 }
 
 // NewLdapConnection ...
@@ -44,55 +43,55 @@ func NewLdapConnection(config Config) (lc LdapConnection, err error) {
 		basedn:      config.Ldap.BaseDn,
 		user:        config.Ldap.User,
 		password:    config.Ldap.Password,
-		groupFilter: config.Ldap.GroupFilter,
-		conn:        nil}
+		groupFilter: config.Ldap.GroupFilter}
 	return lc, nil
 }
 
 // Connect ...
-func (l *LdapConnection) Connect() (err error) {
+func (l *LdapConnection) Connect() (conn *ldap.Conn, err error) {
 
-	if l.conn != nil {
-		log.Printf("LdapConnection.Connection invocked but LdapConnection.conn is not nil, i.e. already connected. Do nothing")
-		return nil
+	if conn, err = ldap.DialURL(l.addr); err != nil {
+		return nil, fmt.Errorf("Failed to connect to LDAP server %s: %w", l.addr, err)
 	}
 
-	log.Printf("Attempting to connect to LDAP server %s\n", l.addr)
-	if l.conn, err = ldap.DialURL(l.addr); err != nil {
-		return fmt.Errorf("Failed to connect to LDAP server %s: %w", l.addr, err)
+	return conn, nil
+}
+
+// TestConnection - ...
+func (l *LdapConnection) TestConnection() (err error) {
+
+	log.Printf("Checking connection to LDAP server %s", l.addr)
+	conn, err := l.Connect()
+	if err != nil {
+		return fmt.Errorf("Error while testing connection to %s: %w", l.addr, err)
 	}
+	defer conn.Close()
 
 	// Only check bind if groupFilter is specified
 	if l.groupFilter != "" {
-		var loginOk bool
-		if loginOk, err = l.CheckUser(l.user, l.password); err != nil {
+		if err = conn.Bind(l.user, l.password); err != nil {
 			return fmt.Errorf("Failed to bind to LDAP server %s using user %s: %w", l.addr, l.user, err)
-		}
-
-		if !loginOk {
-			return fmt.Errorf("Unsuccessful bind using user %s. Please check username and pasword in configuration file", l.user)
 		}
 	}
 
-	log.Printf("Successful connection to LDAP server\n")
+	log.Printf("Successful connection to LDAP server")
 
-	return err
+	return nil
 }
 
 // CheckUser - binds to LDAP server using provided creds and returns auth status
-func (l *LdapConnection) CheckUser(username string, password string) (result bool, err error) {
+func (l *LdapConnection) CheckUser(username string, password string, rLog *log.Logger) (result bool, err error) {
 
-	if l.conn == nil {
-		log.Printf("LdapConnection.CheckUser invoked but LdapConnection.conn is not yet intialized. Connecting to LDAP server")
-		if err = l.Connect(); err != nil {
-			return false, err
-		}
+	conn, err := l.Connect()
+	if err != nil {
+		return false, fmt.Errorf("Error while checking user %s: %w", username, err)
 	}
+	defer conn.Close()
 
 	userDn := strings.Replace(l.userDn, "{{username}}", username, -1)
 
-	log.Printf("Checking LDAP auth for %s", userDn)
-	if err = l.conn.Bind(userDn, password); err != nil {
+	rLog.Printf("Checking LDAP auth for %s", userDn)
+	if err = conn.Bind(userDn, password); err != nil {
 		return false, err
 	}
 
@@ -100,10 +99,21 @@ func (l *LdapConnection) CheckUser(username string, password string) (result boo
 }
 
 // CheckGroupMembership - searches user
-func (l *LdapConnection) CheckGroupMembership(username string) (result bool, err error) {
+func (l *LdapConnection) CheckGroupMembership(username string, rLog *log.Logger) (result bool, err error) {
+
+	conn, err := l.Connect()
+	if err != nil {
+		return false, fmt.Errorf("Error while checking user %s: %w", username, err)
+	}
+	defer conn.Close()
+
+	// Bind using binder user so we can perform search
+	if err = conn.Bind(l.user, l.password); err != nil {
+		return false, err
+	}
 
 	searchFilter := strings.Replace(l.groupFilter, "{{username}}", username, -1)
-	log.Printf("Checking user %s group membership using filter %s", username, searchFilter)
+	rLog.Printf("Checking user %s group membership using filter %s", username, searchFilter)
 
 	searchRequest := ldap.NewSearchRequest(
 		l.basedn,
@@ -114,21 +124,21 @@ func (l *LdapConnection) CheckGroupMembership(username string) (result bool, err
 	)
 
 	var searchResult *ldap.SearchResult
-	if searchResult, err = l.conn.Search(searchRequest); err != nil {
+	if searchResult, err = conn.Search(searchRequest); err != nil {
 		return false, fmt.Errorf("Error while searching for user %s using filter %s: %s", username, searchFilter, err)
 	}
 
 	if len(searchResult.Entries) > 1 {
-		log.Printf("Found more than one record using filter %s", searchFilter)
+		rLog.Printf("Found more than one record using filter %s", searchFilter)
 		return false, nil
 	}
 
 	if len(searchResult.Entries) == 0 {
-		log.Printf("Found no records using filter %s", searchFilter)
+		rLog.Printf("Found no records using filter %s", searchFilter)
 		return false, nil
 	}
 
-	log.Printf("Found one LDAP record that corresponds to provided filter. Consider check successful")
+	rLog.Printf("Found one LDAP record that corresponds to provided filter. Consider check successful")
 
 	return true, nil
 }
