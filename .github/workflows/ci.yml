@@ -37,7 +37,6 @@ jobs:
     - name: Build
       run: |
         bash scripts/build.sh
-        which aws /release-013803cc9fe0903d4c12dd9f8cb67f668d589098
 
 #    - name: Test
 #      run: go test -v .
