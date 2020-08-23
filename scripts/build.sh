@@ -2,20 +2,39 @@
 
 set -ex
 
+VERSION=${1}
+[ -z "${VERSION}" ] && VERSION=$(git describe --tags)
+
 TOP="$(git rev-parse --show-toplevel)"
+REPO_NAME="$(basename ${TOP})"
 BUILD_DIR="${TOP}/build"
+RELEASE_DIR="${TOP}/release/${REPO_NAME}/${VERSION}"
 
 mkdir -p "${BUILD_DIR}"
+mkdir -p "${RELEASE_DIR}"
 
-VERSION=${1}
-[ -z "${VERSION}" ] && VERSION=$(git describe --tags)-$(date "+%Y_%m_%d_%H_%M_%S")
+TARGET_GOOSES=("linux" "darwin" "windows")
+TARGET_GOARCHES=("amd64" "arm")
 
-TARGET_GOOSES=("linux" "darwin")
-export GOARCH=amd64
-
-for OS in ${TARGET_GOOSES[@]}
+for OS in "${TARGET_GOOSES[@]}"
 do
-  echo "Building for ${OS}"
-  export GOOS=${OS}
-  go build -v -o "build/rserver-${GOOS}-${GOARCH}" -v -ldflags "-w -X main.VERSION=${VERSION}"
+    for ARCH in "${TARGET_GOARCHES[@]}"
+    do
+        if [ "${ARCH}" == "arm" ] && [ "${OS}" != "linux" ]; then
+            continue
+        fi
+        echo "Building for ${OS} and arch ${ARCH}"
+        export GOOS="${OS}"
+        export GOARCH="${ARCH}"
+        go build -v -o "build/rserver-${GOOS}-${GOARCH}" -v -ldflags "-s -w -X main.VERSION=${VERSION}"
+        cp "build/rserver-${GOOS}-${GOARCH}" build/rserver
+        zip -j "${RELEASE_DIR}/rserver_${VERSION}_${OS}_${ARCH}.zip" build/rserver
+        rm -rf build/rserver
+    done
+done
+
+cd "${RELEASE_DIR}"
+for FILE in *.zip
+do
+    sha256sum "${FILE}" > "${FILE%.zip}_sha256"
 done
