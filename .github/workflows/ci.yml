@@ -42,7 +42,7 @@ jobs:
 #      run: go test -v .
 
     - name: Release
-      if: startsWith(github.ref, 'refs/tags')
+      if: startsWith(github.ref, 'refs/tags/v')
       env:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
