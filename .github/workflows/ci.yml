@@ -41,5 +41,5 @@ jobs:
 #    - name: Test
 #      run: go test -v .
     - name: Release
-      if: ${{ github.event_name == tag }}
+      if: ${{ github.event_name == on.push.tags }}
       run: echo this should run only on tag
