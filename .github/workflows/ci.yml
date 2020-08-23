@@ -37,6 +37,7 @@ jobs:
     - name: Build
       run: |
         bash scripts/build.sh
+        which aws
 
 #    - name: Test
 #      run: go test -v .
