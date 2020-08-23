@@ -37,10 +37,15 @@ jobs:
     - name: Build
       run: |
         bash scripts/build.sh
-        which aws
+        which aws /release-013803cc9fe0903d4c12dd9f8cb67f668d589098
 
 #    - name: Test
 #      run: go test -v .
+
     - name: Release
       if: startsWith(github.ref, 'refs/tags')
-      run: echo this should run only on tag
+      env:
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: aws s3 sync --dryrun --acl public-read release s3://${{ secrets.RELEASE_BUCKET }}
