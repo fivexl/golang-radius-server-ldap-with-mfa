@@ -5,6 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  tags: [ v* ]
 
 jobs:
 
@@ -39,3 +40,6 @@ jobs:
 
 #    - name: Test
 #      run: go test -v .
+    - name: Release
+      if: ${{ github.event_name == tag }}
+      run: echo this should run only on tag
