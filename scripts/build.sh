@@ -26,7 +26,7 @@ do
         echo "Building for ${OS} and arch ${ARCH}"
         export GOOS="${OS}"
         export GOARCH="${ARCH}"
-        go build -v -o "build/rserver-${GOOS}-${GOARCH}" -v -ldflags "-s -w -X main.VERSION=${VERSION}"
+        go build -o "build/rserver-${GOOS}-${GOARCH}" -ldflags "-s -w -X main.VERSION=${VERSION}"
         cp "build/rserver-${GOOS}-${GOARCH}" build/rserver
         zip -j "${RELEASE_DIR}/rserver_${VERSION}_${OS}_${ARCH}.zip" build/rserver
         rm -rf build/rserver
