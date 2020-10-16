@@ -33,6 +33,7 @@ and if user will have no device configured then auth request will be automatical
 * `IKey`    - DUO integration key
 * `SKey`    - DUO security key
 * `APIHost` - DUO API host
+* `TimeOut` - DUO client time out. Defines how long duo client will wait for user to react on push notification. Default to 30 sec
 
 ## Minmal config file example
 Will only use LDAP auth

@@ -123,7 +123,7 @@ func Run(c *cli.Context) (err error) {
 	var dc *duoauthapi.AuthApi = nil
 	if config.Duo.Enabled {
 		log.Printf("DUO MFA is enabled. Initiating DUO client for API endpoint %s", config.Duo.APIHost)
-		if dc, err = GetDuoAuthClient(config.Duo.IKey, config.Duo.SKey, config.Duo.APIHost); err != nil {
+		if dc, err = GetDuoAuthClient(config.Duo.IKey, config.Duo.SKey, config.Duo.APIHost, config.Duo.TimeOut); err != nil {
 			return fmt.Errorf("Failed to initiate Duo client: %w", err)
 		}
 	}

@@ -42,8 +42,12 @@ type Config struct {
 		APIHost string
 		SKey    string
 		IKey    string
+		TimeOut int
 	}
 }
+
+// DefaultTimeout - defines default time out for Duo client
+const DefaultTimeout = 30
 
 // Validate - makes sure that configuration is valid
 // There should be better way
@@ -91,6 +95,10 @@ func (c *Config) Validate() (err error) {
 		// Check that it is address
 		if c.Duo.APIHost == "" {
 			return fmt.Errorf("Failed to validate DUO configuration - APIHost is required")
+		}
+		if c.Duo.TimeOut == 0 {
+			log.Printf("Duo client time out is not set in config. Fallback to default - %d sec", DefaultTimeout)
+			c.Duo.TimeOut = DefaultTimeout
 		}
 	} else {
 		log.Println("DUO is disabled. Skip DUO configuration validation")

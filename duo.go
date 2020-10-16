@@ -21,18 +21,20 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	duoapi "github.com/duosecurity/duo_api_golang"
 	duoauthapi "github.com/duosecurity/duo_api_golang/authapi"
 )
 
 // GetDuoAuthClient ...
-func GetDuoAuthClient(iKey string, sKey string, apiHost string) (client *duoauthapi.AuthApi, err error) {
+func GetDuoAuthClient(iKey string, sKey string, apiHost string, timeOut int) (client *duoauthapi.AuthApi, err error) {
 	duoClient := duoapi.NewDuoApi(
 		iKey,
 		sKey,
 		apiHost,
-		"",
+		"FivexL_Radius_Server",
+		duoapi.SetTimeout(time.Duration(timeOut)*time.Second),
 	)
 	client = duoauthapi.NewAuthApi(*duoClient)
 
